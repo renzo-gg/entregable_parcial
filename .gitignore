@@ -1,0 +1,48 @@
+## .NET / Visual Studio
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.vscode/
+.idea/
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+bld/
+[Bb]in/
+[Oo]bj/
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+*.nuget.props
+*.nuget.targets
+
+## Rider
+.idea/
+
+## SQLite
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+## Environment / secrets
+appsettings.*.local.json
+*.Development.json
+.env
+.env.*
+
+## User / OS
+Thumbs.db
+Desktop.ini
+
+## Test results
+[Tt]est[Rr]esult*/
+*.trx
+coverage/
