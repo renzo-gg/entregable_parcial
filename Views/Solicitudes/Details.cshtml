@@ -1,0 +1,49 @@
+@model SolicitudDetalleViewModel
+@{
+    ViewData["Title"] = $"Solicitud #{Model.Id}";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Mis solicitudes</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Solicitud #@Model.Id</li>
+    </ol>
+</nav>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Solicitud #@Model.Id</span>
+        <span class="badge @Model.Estado.BadgeCssClass()">@Model.Estado</span>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-4">Correo del cliente</dt>
+            <dd class="col-sm-8">@Model.ClienteEmail</dd>
+
+            <dt class="col-sm-4">Monto solicitado</dt>
+            <dd class="col-sm-8">@Model.MontoSolicitado.ToString("C2")</dd>
+
+            <dt class="col-sm-4">Fecha de solicitud</dt>
+            <dd class="col-sm-8">@Model.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</dd>
+
+            <dt class="col-sm-4">Ingresos mensuales</dt>
+            <dd class="col-sm-8">@Model.IngresosMensuales.ToString("C2")</dd>
+
+            <dt class="col-sm-4">Cliente activo</dt>
+            <dd class="col-sm-8">@(Model.ClienteActivo ? "Si" : "No")</dd>
+
+            <dt class="col-sm-4">Estado</dt>
+            <dd class="col-sm-8">@Model.Estado</dd>
+
+            @if (!string.IsNullOrWhiteSpace(Model.MotivoRechazo))
+            {
+                <dt class="col-sm-4">Motivo de rechazo</dt>
+                <dd class="col-sm-8">@Model.MotivoRechazo</dd>
+            }
+        </dl>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-outline-secondary">Volver a mis solicitudes</a>
+</div>
