@@ -1,0 +1,16 @@
+# Normalización de finales de línea
+* text=auto
+
+# Código fuente: LF
+*.cs text eol=lf
+*.cshtml text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.json text eol=lf
+*.ps1 text eol=crlf
+
+# Binarios no se tocan
+*.db binary
+*.png binary
+*.jpg binary
+*.ico binary
