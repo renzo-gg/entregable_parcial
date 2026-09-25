@@ -56,6 +56,8 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ISesionSolicitudService, SesionSolicitudService>();
 builder.Services.AddScoped<ICacheSolicitudesService, CacheSolicitudesService>();
+builder.Services.AddSingleton<IProductorNotificacionSolicitud, ProductorNotificacionSolicitud>();
+builder.Services.AddHostedService<ConsumidorNotificacionesService>();
 
 var app = builder.Build();
 

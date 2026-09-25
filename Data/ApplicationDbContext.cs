@@ -11,6 +11,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<SolicitudCredito> SolicitudesCreditos => Set<SolicitudCredito>();
 
+    public DbSet<Notificacion> Notificaciones => Set<Notificacion>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -36,6 +38,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .WithMany(c => c.Solicitudes)
                 .HasForeignKey(s => s.ClienteId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<Notificacion>(entity =>
+        {
+            // Idempotencia en redeliveries: el MessageId del mensaje es unico.
+            entity.HasIndex(n => n.MessageId).IsUnique();
+
+            entity.HasIndex(n => n.UsuarioId);
         });
     }
 }

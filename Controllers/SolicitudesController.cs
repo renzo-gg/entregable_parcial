@@ -16,17 +16,20 @@ public class SolicitudesController : Controller
     private readonly UserManager<IdentityUser> _userManager;
     private readonly ICacheSolicitudesService _cacheSolicitudes;
     private readonly ISesionSolicitudService _sesionSolicitud;
+    private readonly IProductorNotificacionSolicitud _productorNotificacionSolicitud;
 
     public SolicitudesController(
         ApplicationDbContext db,
         UserManager<IdentityUser> userManager,
         ICacheSolicitudesService cacheSolicitudes,
-        ISesionSolicitudService sesionSolicitud)
+        ISesionSolicitudService sesionSolicitud,
+        IProductorNotificacionSolicitud productorNotificacionSolicitud)
     {
         _db = db;
         _userManager = userManager;
         _cacheSolicitudes = cacheSolicitudes;
         _sesionSolicitud = sesionSolicitud;
+        _productorNotificacionSolicitud = productorNotificacionSolicitud;
     }
 
     [HttpGet]
@@ -163,6 +166,7 @@ public class SolicitudesController : Controller
 
             TempData["Exito"] = "Solicitud registrada correctamente en estado Pendiente.";
             await _cacheSolicitudes.InvalidarListadoAsync(usuarioId);
+            await _productorNotificacionSolicitud.PublicarSolicitudRegistradaAsync(solicitud.Id, usuarioId);
             return View(model);
         }
 
