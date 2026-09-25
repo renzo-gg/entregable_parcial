@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PlataformaCreditos.Data;
 using PlataformaCreditos.Models;
+using PlataformaCreditos.Services;
 using PlataformaCreditos.ViewModels;
 
 namespace PlataformaCreditos.Controllers;
@@ -13,11 +14,19 @@ public class SolicitudesController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly ICacheSolicitudesService _cacheSolicitudes;
+    private readonly ISesionSolicitudService _sesionSolicitud;
 
-    public SolicitudesController(ApplicationDbContext db, UserManager<IdentityUser> userManager)
+    public SolicitudesController(
+        ApplicationDbContext db,
+        UserManager<IdentityUser> userManager,
+        ICacheSolicitudesService cacheSolicitudes,
+        ISesionSolicitudService sesionSolicitud)
     {
         _db = db;
         _userManager = userManager;
+        _cacheSolicitudes = cacheSolicitudes;
+        _sesionSolicitud = sesionSolicitud;
     }
 
     [HttpGet]
@@ -25,46 +34,54 @@ public class SolicitudesController : Controller
     {
         var usuarioId = _userManager.GetUserId(User)!;
 
-        IQueryable<SolicitudCredito> query = _db.SolicitudesCreditos
-            .Include(s => s.Cliente)
-            .Where(s => s.Cliente!.UsuarioId == usuarioId);
+        var listado = await _cacheSolicitudes.ObtenerListadoAsync(usuarioId);
+        if (listado is null)
+        {
+            listado = await _db.SolicitudesCreditos
+                .Where(s => s.Cliente!.UsuarioId == usuarioId)
+                .OrderByDescending(s => s.FechaSolicitud)
+                .ThenByDescending(s => s.Id)
+                .Select(s => new SolicitudListadoDto(s.Id, s.MontoSolicitado, s.FechaSolicitud, s.Estado))
+                .ToListAsync();
+
+            await _cacheSolicitudes.GuardarListadoAsync(usuarioId, listado);
+        }
 
         ValidarFiltros(model);
 
+        IEnumerable<SolicitudListadoDto> resultados = listado;
+
         if (model.Estado.HasValue)
         {
-            query = query.Where(s => s.Estado == model.Estado.Value);
+            resultados = resultados.Where(s => s.Estado == model.Estado.Value);
         }
 
         if (ModelState.IsValid)
         {
             if (model.MontoMin.HasValue)
             {
-                query = query.Where(s => s.MontoSolicitado >= model.MontoMin.Value);
+                resultados = resultados.Where(s => s.MontoSolicitado >= model.MontoMin.Value);
             }
 
             if (model.MontoMax.HasValue)
             {
-                query = query.Where(s => s.MontoSolicitado <= model.MontoMax.Value);
+                resultados = resultados.Where(s => s.MontoSolicitado <= model.MontoMax.Value);
             }
 
             if (model.FechaDesde.HasValue)
             {
                 var desde = model.FechaDesde.Value;
-                query = query.Where(s => s.FechaSolicitud >= desde);
+                resultados = resultados.Where(s => s.FechaSolicitud >= desde);
             }
 
             if (model.FechaHasta.HasValue)
             {
                 var hasta = model.FechaHasta.Value.Date.AddDays(1);
-                query = query.Where(s => s.FechaSolicitud < hasta);
+                resultados = resultados.Where(s => s.FechaSolicitud < hasta);
             }
         }
 
-        model.Solicitudes = await query
-            .OrderByDescending(s => s.FechaSolicitud)
-            .ThenByDescending(s => s.Id)
-            .ToListAsync();
+        model.Solicitudes = resultados.ToList();
 
         return View(model);
     }
@@ -145,6 +162,7 @@ public class SolicitudesController : Controller
             }
 
             TempData["Exito"] = "Solicitud registrada correctamente en estado Pendiente.";
+            await _cacheSolicitudes.InvalidarListadoAsync(usuarioId);
             return View(model);
         }
 
@@ -164,6 +182,8 @@ public class SolicitudesController : Controller
         {
             return NotFound();
         }
+
+        _sesionSolicitud.GuardarUltimaSolicitud(solicitud.Id, solicitud.MontoSolicitado);
 
         var clienteEmail = (await _db.Users.FindAsync(solicitud.Cliente.UsuarioId))?.Email ?? "Sin correo";
 

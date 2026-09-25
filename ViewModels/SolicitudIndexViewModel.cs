@@ -5,7 +5,7 @@ namespace PlataformaCreditos.ViewModels;
 
 public class SolicitudIndexViewModel
 {
-    public IEnumerable<SolicitudCredito> Solicitudes { get; set; } = Enumerable.Empty<SolicitudCredito>();
+    public IReadOnlyList<SolicitudListadoDto> Solicitudes { get; set; } = Array.Empty<SolicitudListadoDto>();
 
     public EstadoSolicitud? Estado { get; set; }
 

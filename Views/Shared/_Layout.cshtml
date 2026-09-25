@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@inject ISesionSolicitudService SesionSolicitudService
+@{
+    var ultimaSolicitud = SesionSolicitudService.ObtenerUltimaSolicitud();
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -28,6 +32,14 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Solicitudes" asp-action="Index">Mis solicitudes</a>
                             </li>
+                            @if (ultimaSolicitud is not null)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Solicitudes" asp-action="Details" asp-route-id="@ultimaSolicitud.Id">
+                                        Ver última solicitud S/ @ultimaSolicitud.Monto.ToString("N2")
+                                    </a>
+                                </li>
+                            }
                         }
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 using PlataformaCreditos.Data;
+using PlataformaCreditos.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +17,50 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
+// Cache distribuido + sesion (Redis-backed) con fallback en memoria.
+var redisHost = builder.Configuration["Redis:Host"];
+if (!string.IsNullOrWhiteSpace(redisHost))
+{
+    var redisPort = int.TryParse(builder.Configuration["Redis:Port"], out var port) ? port : 6379;
+    var redisSsl = bool.TryParse(builder.Configuration["Redis:Ssl"], out var useSsl) && useSsl;
+
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.InstanceName = "PlataformaCreditos:";
+        options.ConfigurationOptions = new ConfigurationOptions
+        {
+            Password = builder.Configuration["Redis:Password"],
+            Ssl = redisSsl,
+            AbortOnConnectFail = false,
+            ConnectTimeout = 5000,
+            SyncTimeout = 5000
+        };
+        options.ConfigurationOptions.EndPoints.Add(redisHost, redisPort);
+    });
+}
+else
+{
+    builder.Services.AddDistributedMemoryCache();
+}
+
+builder.Services.AddSession(options =>
+{
+    options.Cookie.Name = ".PlataformaCreditos.Session";
+    options.Cookie.HttpOnly = true;
+    options.IdleTimeout = TimeSpan.FromMinutes(20);
+    options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ISesionSolicitudService, SesionSolicitudService>();
+builder.Services.AddScoped<ICacheSolicitudesService, CacheSolicitudesService>();
+
 var app = builder.Build();
+
+if (string.IsNullOrWhiteSpace(redisHost))
+{
+    app.Logger.LogWarning("Redis no configurado (Redis:Host vacio). Cache y sesion usaran memoria local.");
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -31,6 +76,8 @@ else
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthorization();
 
