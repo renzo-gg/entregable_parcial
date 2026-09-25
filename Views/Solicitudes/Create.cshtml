@@ -1,0 +1,42 @@
+@model CrearSolicitudViewModel
+@{
+    ViewData["Title"] = "Solicitar credito";
+}
+
+<h1>Solicitar credito</h1>
+
+@if (TempData["Exito"] is not null)
+{
+    <div class="alert alert-success">
+        @TempData["Exito"]
+        <a asp-action="Index" class="alert-link">Ver mis solicitudes</a>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.BloqueoMensaje))
+{
+    <div class="alert alert-warning">@Model.BloqueoMensaje</div>
+}
+else
+{
+    <div class="alert alert-light border">
+        Tus ingresos mensuales: <strong>S/ @Model.IngresosMensuales.ToString("N2")</strong>.
+        Monto maximo solicitable: <strong>S/ @((Model.IngresosMensuales * 10).ToString("N2"))</strong> (10x de tus ingresos).
+    </div>
+
+    <form asp-action="Create" method="post" class="card">
+        <div class="card-body">
+            <div class="mb-3">
+                <label asp-for="MontoSolicitado" class="form-label"></label>
+                <input asp-for="MontoSolicitado" class="form-control" />
+                <span asp-validation-for="MontoSolicitado" class="text-danger"></span>
+            </div>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <button type="submit" class="btn btn-primary">Registrar solicitud</button>
+        </div>
+    </form>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
