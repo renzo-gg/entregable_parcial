@@ -1,0 +1,87 @@
+@model SolicitudIndexViewModel
+@{
+    ViewData["Title"] = "Mis solicitudes";
+}
+
+<h1>Mis solicitudes</h1>
+
+<div class="mb-3">
+    <a asp-action="Create" class="btn btn-primary">Solicitar credito</a>
+</div>
+
+<form method="get" asp-action="Index" class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-3">
+                <label asp-for="Estado" class="form-label"></label>
+                <select asp-for="Estado" asp-items="Html.GetEnumSelectList<EstadoSolicitud>()" class="form-select">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-3">
+                <label asp-for="MontoMin" class="form-label"></label>
+                <input asp-for="MontoMin" class="form-control" />
+                <span asp-validation-for="MontoMin" class="text-danger"></span>
+            </div>
+            <div class="col-12 col-md-3">
+                <label asp-for="MontoMax" class="form-label"></label>
+                <input asp-for="MontoMax" class="form-control" />
+                <span asp-validation-for="MontoMax" class="text-danger"></span>
+            </div>
+            <div class="col-12 col-md-3">
+                <label asp-for="FechaDesde" class="form-label"></label>
+                <input asp-for="FechaDesde" class="form-control" />
+            </div>
+            <div class="col-12 col-md-3">
+                <label asp-for="FechaHasta" class="form-label"></label>
+                <input asp-for="FechaHasta" class="form-control" />
+            </div>
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Limpiar</a>
+            </div>
+        </div>
+        <div asp-validation-summary="All" class="text-danger mt-3 mb-0"></div>
+    </div>
+</form>
+
+@if (Model.Solicitudes.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Monto solicitado</th>
+                    <th>Fecha de solicitud</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var solicitud in Model.Solicitudes)
+                {
+                    <tr>
+                        <td>@solicitud.Id</td>
+                        <td>@solicitud.MontoSolicitado.ToString("C2")</td>
+                        <td>@solicitud.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <span class="badge @solicitud.Estado.BadgeCssClass()">@solicitud.Estado</span>
+                        </td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@solicitud.Id" class="btn btn-sm btn-outline-primary">Ver detalle</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">No tienes solicitudes que coincidan con los filtros.</div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

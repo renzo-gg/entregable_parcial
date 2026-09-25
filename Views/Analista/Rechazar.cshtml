@@ -1,0 +1,39 @@
+@model RechazarSolicitudViewModel
+@{
+    ViewData["Title"] = $"Rechazar solicitud #{Model.SolicitudId}";
+}
+
+<h1>Rechazar solicitud #@Model.SolicitudId</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Cliente</dt>
+            <dd class="col-sm-8">@Model.ClienteEmail</dd>
+            <dt class="col-sm-4">Monto solicitado</dt>
+            <dd class="col-sm-8">S/ @Model.MontoSolicitado.ToString("N2")</dd>
+            <dt class="col-sm-4">Ingresos mensuales</dt>
+            <dd class="col-sm-8">S/ @Model.IngresosMensuales.ToString("N2")</dd>
+        </dl>
+    </div>
+</div>
+
+<form asp-action="Rechazar" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="SolicitudId" />
+
+    <div class="mb-3">
+        <label asp-for="MotivoRechazo" class="form-label"></label>
+        <textarea asp-for="MotivoRechazo" class="form-control" rows="4"
+                  placeholder="Indique el motivo por el cual se rechaza la solicitud..."></textarea>
+        <span asp-validation-for="MotivoRechazo" class="text-danger"></span>
+        <div class="text-muted small mt-1">Campo obligatorio.</div>
+    </div>
+
+    <button type="submit" class="btn btn-danger">Confirmar rechazo</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

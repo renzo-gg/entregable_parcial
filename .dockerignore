@@ -1,0 +1,24 @@
+**/bin/
+**/obj/
+bin/
+obj/
+.git/
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Base de datos local de desarrollo (NUNCA debe viajar en la imagen)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Entornos y secretos locales
+appsettings.*.local.json
+.env
+.env.*
+
+# Logs / temporales
+*.log
