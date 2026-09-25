@@ -3,25 +3,48 @@
     ViewData["Title"] = "Mis notificaciones";
 }
 
-<h1>Mis notificaciones</h1>
-<p class="text-muted">Avisos generados por el estado de tus solicitudes.</p>
+<div class="page-header">
+    <div>
+        <h1>Mis notificaciones</h1>
+        <p class="lead">Avisos generados por el estado de tus solicitudes.</p>
+    </div>
+    <span class="stat-chip">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        Total: @Model.Notificaciones.Count
+    </span>
+</div>
 
 @if (Model.Notificaciones.Count == 0)
 {
-    <div class="alert alert-info">Aún no tienes notificaciones.</div>
+    <div class="alert alert-info d-flex align-items-center gap-2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <span>Aún no tienes notificaciones.</span>
+    </div>
 }
 else
 {
-    <div class="list-group">
+    <div class="notif-list list-group">
         @foreach (var notificacion in Model.Notificaciones)
         {
-            <div class="list-group-item d-flex justify-content-between align-items-start">
-                <div>
+            <div class="list-group-item d-flex gap-3 p-3 align-items-start">
+                <span class="notif-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                </span>
+                <div class="flex-grow-1">
                     <div class="fw-semibold">@notificacion.Contenido</div>
-                    <div class="text-muted small">
-                        <span class="badge text-bg-secondary">@notificacion.Tipo</span>
-                        Evento: @notificacion.FechaEventoUtc.ToString("dd/MM/yyyy HH:mm:ss 'UTC'") ·
-                        Recibido: @notificacion.FechaRegistroUtc.ToString("dd/MM/yyyy HH:mm:ss 'UTC'")
+                    <div class="text-muted small d-flex flex-wrap gap-2 mt-1">
+                        <span class="badge bg-soft-primary">@notificacion.Tipo</span>
+                        <span>Evento: @notificacion.FechaEventoUtc.ToString("dd/MM/yyyy HH:mm:ss 'UTC'")</span>
+                        <span>·</span>
+                        <span>Recibido: @notificacion.FechaRegistroUtc.ToString("dd/MM/yyyy HH:mm:ss 'UTC'")</span>
                     </div>
                 </div>
                 <a asp-controller="Solicitudes" asp-action="Details" asp-route-id="@notificacion.SolicitudId"

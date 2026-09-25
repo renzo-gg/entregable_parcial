@@ -3,39 +3,68 @@
     ViewData["Title"] = "Solicitar credito";
 }
 
-<h1>Solicitar credito</h1>
-
-@if (TempData["Exito"] is not null)
-{
-    <div class="alert alert-success">
-        @TempData["Exito"]
-        <a asp-action="Index" class="alert-link">Ver mis solicitudes</a>
+<div class="page-header">
+    <div>
+        <h1>Solicitar crédito</h1>
+        <p class="lead">Registra una nueva solicitud de crédito personal.</p>
     </div>
-}
+</div>
 
-@if (!string.IsNullOrWhiteSpace(Model.BloqueoMensaje))
-{
-    <div class="alert alert-warning">@Model.BloqueoMensaje</div>
-}
-else
-{
-    <div class="alert alert-light border">
-        Tus ingresos mensuales: <strong>S/ @Model.IngresosMensuales.ToString("N2")</strong>.
-        Monto maximo solicitable: <strong>S/ @((Model.IngresosMensuales * 10).ToString("N2"))</strong> (10x de tus ingresos).
-    </div>
-
-    <form asp-action="Create" method="post" class="card">
-        <div class="card-body">
-            <div class="mb-3">
-                <label asp-for="MontoSolicitado" class="form-label"></label>
-                <input asp-for="MontoSolicitado" class="form-control" />
-                <span asp-validation-for="MontoSolicitado" class="text-danger"></span>
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-6">
+        @if (TempData["Exito"] is not null)
+        {
+            <div class="alert alert-success d-flex align-items-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <span>
+                    @TempData["Exito"]
+                    <a asp-action="Index" class="alert-link">Ver mis solicitudes</a>
+                </span>
             </div>
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <button type="submit" class="btn btn-primary">Registrar solicitud</button>
-        </div>
-    </form>
-}
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.BloqueoMensaje))
+        {
+            <div class="alert alert-warning d-flex align-items-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                <span>@Model.BloqueoMensaje</span>
+            </div>
+        }
+        else
+        {
+            <div class="app-card-grad card mb-4">
+                <div class="card-body d-flex flex-wrap justify-content-between gap-3">
+                    <div>
+                        <div class="small text-uppercase" style="opacity: .75">Ingresos mensuales</div>
+                        <div class="fs-4 fw-bold">S/ @Model.IngresosMensuales.ToString("N2")</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="small text-uppercase" style="opacity: .75">Monto máximo solicitado</div>
+                        <div class="fs-4 fw-bold">S/ @((Model.IngresosMensuales * 10).ToString("N2"))</div>
+                        <div class="small" style="opacity: .75">10x de tus ingresos</div>
+                    </div>
+                </div>
+            </div>
+
+            <form asp-action="Create" method="post" class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="MontoSolicitado" class="form-label"></label>
+                        <input asp-for="MontoSolicitado" class="form-control form-control-lg" placeholder="0.00" />
+                        <span asp-validation-for="MontoSolicitado" class="text-danger"></span>
+                    </div>
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">Registrar solicitud</button>
+                </div>
+            </form>
+        }
+    </div>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

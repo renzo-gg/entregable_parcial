@@ -3,7 +3,7 @@
     var ultimaSolicitud = SesionSolicitudService.ObtenerUltimaSolicitud();
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,62 +15,63 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">PlataformaCreditos</a>
+        <nav class="navbar navbar-expand-lg app-navbar sticky-top">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="brand-mark">P</span>
+                    <span>Plataforma<strong>Creditos</strong></span>
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="navbar-collapse collapse d-lg-flex justify-content-between">
+                    <ul class="navbar-nav align-items-lg-center gap-lg-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
                         </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Solicitudes" asp-action="Index">Mis solicitudes</a>
+                                <a class="nav-link" asp-area="" asp-controller="Solicitudes" asp-action="Index">Mis solicitudes</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Notificaciones" asp-action="Index">Mis notificaciones</a>
+                                <a class="nav-link" asp-area="" asp-controller="Notificaciones" asp-action="Index">Notificaciones</a>
                             </li>
                             @if (ultimaSolicitud is not null)
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Solicitudes" asp-action="Details" asp-route-id="@ultimaSolicitud.Id">
-                                        Ver última solicitud S/ @ultimaSolicitud.Monto.ToString("N2")
+                                    <a class="nav-link" asp-area="" asp-controller="Solicitudes" asp-action="Details" asp-route-id="@ultimaSolicitud.Id">
+                                        Última solicitud S/ @ultimaSolicitud.Monto.ToString("N2")
                                     </a>
                                 </li>
                             }
                             @if (User.IsInRole("Analista"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Analista" asp-action="Index">Panel analista</a>
+                                    <a class="nav-link" asp-area="" asp-controller="Analista" asp-action="Index">Panel analista</a>
                                 </li>
                             }
-                            <li class="nav-item">
-                                <span id="signalr-status" class="nav-link small text-muted">Conectando...</span>
+                            <li class="nav-item d-none d-lg-flex align-items-center">
+                                <span id="signalr-status" class="status-chip nav-link small">Conectando...</span>
                             </li>
                         }
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    <main role="main">
+        <div class="container pt-4">
             @RenderBody()
-        </main>
-    </div>
+        </div>
+    </main>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - PlataformaCreditos - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="app-footer">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <span>&copy; 2026 — PlataformaCreditos</span>
+            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -88,7 +89,7 @@
                 function setStatus(texto, estado) {
                     if (!statusBadge) return;
                     statusBadge.textContent = texto;
-                    statusBadge.className = 'nav-link small ' + estado;
+                    statusBadge.className = 'status-chip nav-link small ' + estado;
                 }
 
                 function mostrarToast(solicitudId, estado, motivoRechazo) {
