@@ -1,8 +1,78 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero rounded-bottom-4">
+    <div class="container hero-inner">
+        <span class="hero-overline">Créditos personales</span>
+        <h1 class="hero-title">Tu crédito, <span class="text-gradient">sin filas ni papeleo</span></h1>
+        <p class="hero-sub">
+            Registra tu solicitud de crédito en minutos, sigue su estado en tiempo real
+            y recibe notificaciones al instante cuando el analista la apruebe o rechace.
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="Solicitudes" asp-action="Create" class="btn btn-grad btn-lg">Solicitar crédito</a>
+                <a asp-controller="Solicitudes" asp-action="Index" class="btn btn-light btn-lg">Mis solicitudes</a>
+                @if (User.IsInRole("Analista"))
+                {
+                    <a asp-controller="Analista" asp-action="Index" class="btn btn-outline-light btn-lg">Panel analista</a>
+                }
+            }
+            else
+            {
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-grad btn-lg">Iniciar sesión</a>
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-light btn-lg">Crear cuenta</a>
+            }
+        </div>
+    </div>
 </div>
+
+<section class="container my-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-card p-4">
+                <div class="feature-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                </div>
+                <h5 class="fw-bold">Registro seguro</h5>
+                <p class="text-muted mb-0">
+                    Acceso con cuentas verificadas y formularios validados 100% en el servidor.
+                    Tus datos están protegidos en todo momento.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card p-4">
+                <div class="feature-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                    </svg>
+                </div>
+                <h5 class="fw-bold">Aprobación ágil</h5>
+                <p class="text-muted mb-0">
+                    El analista evalúa tu solicitud con una regla clara (hasta 5x tus ingresos)
+                    y resuelve tu pedido sin demoras.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card p-4">
+                <div class="feature-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 2L11 13"></path>
+                        <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
+                    </svg>
+                </div>
+                <h5 class="fw-bold">En tiempo real</h5>
+                <p class="text-muted mb-0">
+                    Recibe notificaciones al momento cuando cambia el estado de tu solicitud
+                    (WebSocket) y revisa tu historial completo de avisos.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
