@@ -46,6 +46,9 @@
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Analista" asp-action="Index">Panel analista</a>
                                 </li>
                             }
+                            <li class="nav-item">
+                                <span id="signalr-status" class="nav-link small text-muted">Conectando...</span>
+                            </li>
                         }
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
@@ -70,6 +73,72 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;"></div>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script src="~/lib/signalr/signalr.min.js" asp-append-version="true"></script>
+        <script>
+            (function () {
+                const statusBadge = document.getElementById('signalr-status');
+                const toastContainer = document.getElementById('toast-container');
+
+                function setStatus(texto, estado) {
+                    if (!statusBadge) return;
+                    statusBadge.textContent = texto;
+                    statusBadge.className = 'nav-link small ' + estado;
+                }
+
+                function mostrarToast(solicitudId, estado, motivoRechazo) {
+                    if (!toastContainer) return;
+                    const fecha = new Date().toLocaleTimeString();
+                    const motivo = motivoRechazo && motivoRechazo.length > 0
+                        ? `<div class="small text-muted">Motivo: ${motivoRechazo}</div>`
+                        : '';
+                    const aprobada = estado === 'Aprobado';
+                    const toast = document.createElement('div');
+                    toast.className = 'toast align-items-center text-bg-' + (aprobada ? 'success' : 'danger') + ' border-0';
+                    toast.setAttribute('role', 'alert');
+                    toast.innerHTML = `
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <strong>Tu solicitud #${solicitudId} fue ${aprobada ? 'APROBADA' : 'RECHAZADA'}</strong>
+                                <div class="small">${fecha}</div>
+                                ${motivo}
+                                <a class="link-light" href="/Solicitudes/Details/${solicitudId}">Ver detalle</a>
+                            </div>
+                            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+                        </div>`;
+                    toastContainer.appendChild(toast);
+                    const bsToast = new bootstrap.Toast(toast, { delay: 8000 });
+                    bsToast.show();
+                    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+                }
+
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl('/hubs/solicitudes')
+                    .withAutomaticReconnect([0, 2000, 5000, 10000, 15000, 30000])
+                    .build();
+
+                connection.onreconnecting((error) => setStatus('Reconectando...', 'text-warning'));
+                connection.onreconnected((connectionId) => setStatus('Conectado', 'text-success'));
+                connection.onclose((error) => setStatus('Desconectado', 'text-danger'));
+
+                connection.on('SolicitudEstadoActualizado', (solicitudId, estado, motivoRechazo) => {
+                    mostrarToast(solicitudId, estado, motivoRechazo);
+                });
+
+                (async function iniciarConexion() {
+                    setStatus('Conectando...', 'text-muted');
+                    try {
+                        await connection.start();
+                        setStatus('Conectado', 'text-success');
+                    } catch (error) {
+                        setStatus('Desconectado', 'text-danger');
+                    }
+                })();
+            })();
+        </script>
+    }
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

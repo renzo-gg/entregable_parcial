@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using PlataformaCreditos.Data;
+using PlataformaCreditos.Hubs;
 using PlataformaCreditos.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 
 // Cache distribuido + sesion (Redis-backed) con fallback en memoria.
 var redisHost = builder.Configuration["Redis:Host"];
@@ -79,7 +81,12 @@ app.UseRouting();
 
 app.UseSession();
 
+app.UseAuthentication();
+
 app.UseAuthorization();
+
+app.MapHub<SolicitudesHub>("/hubs/solicitudes")
+   .RequireAuthorization();
 
 app.MapStaticAssets();
 

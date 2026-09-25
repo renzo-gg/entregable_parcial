@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PlataformaCreditos.Data;
+using PlataformaCreditos.Hubs;
 using PlataformaCreditos.Models;
 using PlataformaCreditos.Services;
 using PlataformaCreditos.ViewModels;
@@ -13,11 +15,13 @@ public class AnalistaController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly ICacheSolicitudesService _cacheSolicitudes;
+    private readonly IHubContext<SolicitudesHub> _hub;
 
-    public AnalistaController(ApplicationDbContext db, ICacheSolicitudesService cacheSolicitudes)
+    public AnalistaController(ApplicationDbContext db, ICacheSolicitudesService cacheSolicitudes, IHubContext<SolicitudesHub> hub)
     {
         _db = db;
         _cacheSolicitudes = cacheSolicitudes;
+        _hub = hub;
     }
 
     [HttpGet]
@@ -80,6 +84,7 @@ public class AnalistaController : Controller
         await _db.SaveChangesAsync();
 
         await _cacheSolicitudes.InvalidarListadoAsync(solicitud.Cliente.UsuarioId);
+        await NotificarEstadoAsync(solicitud);
 
         TempData["Exito"] = $"Solicitud #{id} aprobada correctamente.";
         return RedirectToAction(nameof(Index));
@@ -108,7 +113,7 @@ public class AnalistaController : Controller
     public async Task<IActionResult> Rechazar(RechazarSolicitudViewModel model)
     {
         var solicitud = await ObtenerPendienteIncluyendoClienteAsync(model.SolicitudId);
-        if (solicitud is null)
+        if (solicitud?.Cliente is null)
         {
             return NotFound();
         }
@@ -132,6 +137,7 @@ public class AnalistaController : Controller
         await _db.SaveChangesAsync();
 
         await _cacheSolicitudes.InvalidarListadoAsync(solicitud.Cliente.UsuarioId);
+        await NotificarEstadoAsync(solicitud);
 
         TempData["Exito"] = $"Solicitud #{solicitud.Id} rechazada correctamente.";
         return RedirectToAction(nameof(Index));
@@ -141,6 +147,21 @@ public class AnalistaController : Controller
         => await _db.SolicitudesCreditos
             .Include(s => s.Cliente)
             .FirstOrDefaultAsync(s => s.Id == id);
+
+    private async Task NotificarEstadoAsync(SolicitudCredito solicitud)
+    {
+        if (solicitud.Cliente is null)
+        {
+            return;
+        }
+
+        await _hub.Clients.User(solicitud.Cliente.UsuarioId)
+            .SendAsync(
+                "SolicitudEstadoActualizado",
+                solicitud.Id,
+                solicitud.Estado.ToString(),
+                solicitud.MotivoRechazo);
+    }
 
     private async Task<RechazarSolicitudViewModel> CrearViewModelDeRechazo(SolicitudCredito solicitud)
     {
