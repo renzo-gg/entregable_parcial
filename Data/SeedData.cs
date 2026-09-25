@@ -9,7 +9,6 @@ public static class SeedData
     public static async Task InitializeAsync(IServiceProvider services)
     {
         var db = services.GetRequiredService<ApplicationDbContext>();
-        await db.Database.MigrateAsync();
 
         var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();

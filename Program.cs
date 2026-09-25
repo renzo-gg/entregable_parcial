@@ -20,8 +20,20 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 
 // Cache distribuido + sesion (Redis-backed) con fallback en memoria.
+// En produccion se puede usar Redis:ConnectionString (cadena completa "host:port,password=..,ssl=..")
+// o desglosada en Redis:Host / Redis:Port / Redis:Password / Redis:Ssl.
+var redisConnectionString = builder.Configuration["Redis:ConnectionString"];
 var redisHost = builder.Configuration["Redis:Host"];
-if (!string.IsNullOrWhiteSpace(redisHost))
+if (!string.IsNullOrWhiteSpace(redisConnectionString))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.InstanceName = "PlataformaCreditos:";
+        options.ConfigurationOptions = ConfigurationOptions.Parse(redisConnectionString);
+        options.ConfigurationOptions.AbortOnConnectFail = false;
+    });
+}
+else if (!string.IsNullOrWhiteSpace(redisHost))
 {
     var redisPort = int.TryParse(builder.Configuration["Redis:Port"], out var port) ? port : 6379;
     var redisSsl = bool.TryParse(builder.Configuration["Redis:Ssl"], out var useSsl) && useSsl;
@@ -61,9 +73,9 @@ builder.Services.AddHostedService<ConsumidorNotificacionesService>();
 
 var app = builder.Build();
 
-if (string.IsNullOrWhiteSpace(redisHost))
+if (string.IsNullOrWhiteSpace(redisConnectionString) && string.IsNullOrWhiteSpace(redisHost))
 {
-    app.Logger.LogWarning("Redis no configurado (Redis:Host vacio). Cache y sesion usaran memoria local.");
+    app.Logger.LogWarning("Redis no configurado (Redis:ConnectionString/Redis:Host vacios). Cache y sesion usaran memoria local.");
 }
 
 // Configure the HTTP request pipeline.
@@ -105,12 +117,18 @@ using (var scope = app.Services.CreateScope())
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
+        // Aplica las migraciones de EF Core automaticamente al iniciar la aplicacion
+        // (necesario en Render: crea/actualiza el esquema en /var/data/creditos.db).
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await db.Database.MigrateAsync();
+        logger.LogInformation("Migraciones de EF Core aplicadas correctamente.");
+
         await SeedData.InitializeAsync(scope.ServiceProvider);
         logger.LogInformation("Seeding de datos iniciales aplicado correctamente.");
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "Ocurrio un error al aplicar el seeding de datos iniciales.");
+        logger.LogError(ex, "Ocurrio un error al aplicar las migraciones o el seeding de datos iniciales.");
         throw;
     }
 }
